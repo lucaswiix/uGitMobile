@@ -6,16 +6,19 @@ import { ActivityIndicator,
     StyleSheet, Image,
      TextInput, TouchableOpacity, 
      View } from 'react-native';
-import { Icon } from 'react-native-elements';
 
-import logo from '../assets/logo.png';
-import api from '../services/api';
+import NetInfo from "@react-native-community/netinfo";
 
+import logo from 'assets/logo.png';
+import api from 'services/api';
+
+import axios from 'axios';
 export default function Login({ navigation }) {  
     const [email, setEmail] = useState('');
 
-    const [accessToken, setAcessToken] = useState('');
-
+    const [toggleLan, setToggleLan] = useState(false);
+    const [lanList, setLanList] = useState({});
+    const [loadedLanInfo, setLoadedLanInfo] = useState(false);
     const [password, setPassword] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
 
@@ -23,7 +26,6 @@ export default function Login({ navigation }) {
 
     useEffect(() => {
         AsyncStorage.getItem('token').then(token => {
-            console.log('token', token);
             if(token) {
                 navigation.navigate('App', { token });
             }
@@ -31,6 +33,40 @@ export default function Login({ navigation }) {
 
     }, []);
 
+
+    async function handleShowNetwork(){
+        var data = {};
+        setToggleLan(true);
+        setLoadedLanInfo(false);
+
+        setLanList({});
+            await NetInfo.fetch().then(state => {
+                data.type = state.type;
+                data.isConnected = state.isConnected;
+            }).catch(e => console.log(e));
+
+            try {
+                const responseUcloud = await fetch('http://api.exchangeratesapi.io/latest', 
+                { timeout: 5000 });
+                const rspk = await responseUcloud.json();
+                if(rspk)
+                data.pingGoogle = true;
+            } catch (error) {                
+                data.pingGoogle = false;           
+            }
+
+            try {                
+                const gitlabApi = await fetch('http://10.0.30.9/api/v4/projects');
+                const responseGitlab = await gitlabApi.json();
+                if(responseGitlab) 
+                data.pingGitlab = true;
+            } catch (error) {                
+                data.pingGitlab = false;
+            }
+            
+            setLanList({type: data.type, isConnected: data.isConnected, pingGoogle: data.pingGoogle, pingGitlab : data.pingGitlab});
+            setLoadedLanInfo(true);
+    }
 
     async function handleLogin() {
         setErrorMsg('');
@@ -41,10 +77,20 @@ export default function Login({ navigation }) {
             "username"      : email,
             "password"      : password
           }
-        await api.post('/oauth/token', data, { timeout: 2000 }).then(async response => {
-            await AsyncStorage.setItem('token', response.data.access_token);
+        await fetch('http://10.0.30.9/oauth/token', {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          })
+          .then((r) => r.json())
+          .then(async (response) => {
+              console.log(response);
+            await AsyncStorage.setItem('token', response.access_token);
             // console.log(navigation.dangerouslyGetParent());
-            navigation.navigate('App', { token: response.data.access_token });
+            navigation.navigate('App', { token: response.access_token });
         
         }).catch(error => {
             if(error.response){
@@ -57,10 +103,8 @@ export default function Login({ navigation }) {
                     setErrorMsg('Ops, some error happended in server.')
                 
             }else{
-                setErrorMsg('Failed in try contact to gitlab.');
+                setErrorMsg('Failed in try contact to gitlab:\n '+error.toString());
             }
-        
-
         });
 
         setLoading(false)
@@ -114,11 +158,46 @@ export default function Login({ navigation }) {
                 
              </View>
                 )}
+
+                    {toggleLan && (
+                        <View style={styles.lanContainer}>
+                
+                            <Image style={styles.matchImage} source={logo} alt="Lans" />
+                            {loadedLanInfo ? (
+
+                            <View style={{marginVertical: 20}}>
+                                <Text style={{color: '#ddd', fontWeight: 'bold'}}>Connection Type: {lanList.type}</Text>
+                                <Text style={{color: '#ddd', fontWeight: 'bold'}}>Is connected? {lanList.isConnected ? 'Yes' : 'No'}</Text>
+                                <Text style={{color: '#ddd', fontWeight: 'bold'}}>Ping in google.com: {lanList.pingGoogle ? 'Success' : 'Failed'}</Text>
+                                <Text style={{color: '#ddd', fontWeight: 'bold'}}>Ping in 10.0.30.9: {lanList.pingGitlab ? 'Success' : 'Failed'}</Text>
+
+                            </View>
+                            ) : <ActivityIndicator style={{marginTop:20}} size="large" color="#fff" />}
+   
+                            <TouchableOpacity onPress={() => setToggleLan(false)} style={styles.matchCloseBtn}>
+                                 <Text style={styles.closeMatch}>Close</Text>    
+                            </TouchableOpacity>
+                   
+                        </View>
+                    )
+                    }
+
+                    <TouchableOpacity onPress={() => handleShowNetwork()} style={styles.BtnShowLan}>
+                         <Text style={styles.btnToggleNetwork}>Show Network</Text>    
+                     </TouchableOpacity>
+
+                
             </KeyboardAvoidingView>
         );    
 }
 
 const styles = StyleSheet.create({
+    BtnShowLan:{
+        position: "absolute",
+        bottom: 0,
+        alignSelf: 'center',
+        marginBottom: 10,
+    },
     container: {
         flex:1,
         backgroundColor:'#f5f5f5',
@@ -161,6 +240,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center'
     },
+    lanContainer:{
+        ... StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
     matchCloseBtn: {
         alignSelf:'center',
         color:'#fff',
@@ -168,6 +253,13 @@ const styles = StyleSheet.create({
     closeMatch: {
         fontSize: 16,      
         color:'rgba(255, 255, 255, 0.8)',
+        marginTop: 30,
+        textAlign: 'center',
+        fontWeight:'bold'
+    },
+    btnToggleNetwork: {
+        fontSize: 16,      
+        color: 'rgba(0, 0, 0, 0.8)',
         marginTop: 30,
         textAlign: 'center',
         fontWeight:'bold'

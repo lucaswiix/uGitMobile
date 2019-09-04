@@ -1,4 +1,5 @@
 module.exports = {
   root: true,
-  extends: '@react-native-community',
+  extends: 'plugin:react-native/all',
+  parser: "babel-eslint",
 };
