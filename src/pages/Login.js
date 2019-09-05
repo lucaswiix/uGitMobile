@@ -77,20 +77,11 @@ export default function Login({ navigation }) {
             "username"      : email,
             "password"      : password
           }
-        await fetch('http://10.0.30.9/oauth/token', {
-            method: 'POST',
-            headers: {
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-          })
-          .then((r) => r.json())
+        await api.post('/oauth/token', data, { timeout : 5000 })
           .then(async (response) => {
-              console.log(response);
-            await AsyncStorage.setItem('token', response.access_token);
+            await AsyncStorage.setItem('token', response.data.access_token);
             // console.log(navigation.dangerouslyGetParent());
-            navigation.navigate('App', { token: response.access_token });
+            navigation.navigate('App', { token: response.data.access_token });
         
         }).catch(error => {
             if(error.response){
