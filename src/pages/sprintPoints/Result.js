@@ -14,6 +14,7 @@ export default function Points({ navigation }) {
     const [ getTotal, setTotal] = useState(0);
     const [peoples, setPeoples] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [getMessage, setMessage] = useState('Get data...');
     var counting = 0;
 
     useEffect(() => {
@@ -39,7 +40,7 @@ export default function Points({ navigation }) {
                 },
                 timeout: 5000
             }).then(response => {
-                console.log(response.data);
+                if(response.data.length > 0){
                 var total = 0;
                 response.data.map(issue => {
                 let firsttValid = false;
@@ -82,6 +83,10 @@ export default function Points({ navigation }) {
                 })
                 setTotal(total);
                 if(response.data.length == 100) return getIssuesByProjectId(project_id, page++);
+            }else{
+                setMessage('Invalid milestone name');
+            }
+
             }).catch(e => console.log(e) );
 
 
@@ -131,7 +136,7 @@ export default function Points({ navigation }) {
        : ( 
         <View style={styles.loadingView}>
             <ActivityIndicator style={{marginTop:20}} size="large" color="#000" />
-            <Text style={{color:'#000'}}>Get data...</Text>
+            <Text style={{color:'#000'}}>{getMessage}</Text>
         </View>
        )
        }
