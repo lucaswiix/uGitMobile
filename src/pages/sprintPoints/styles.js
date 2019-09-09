@@ -20,6 +20,15 @@ const styles = StyleSheet.create({
         alignSelf: 'center',  
         justifyContent: 'center',
     }, 
+    input: {
+        height:46,
+        alignSelf: 'stretch',
+        borderRadius: 4,
+        borderWidth: 1,
+        marginTop:10,
+        borderColor: '#ddd',
+        paddingHorizontal: 15,        
+    },
     logo :{ 
         marginTop: 30
     },
@@ -76,6 +85,31 @@ const styles = StyleSheet.create({
     buttonsContainer:{
         flexDirection: 'row',
         marginBottom: 30,
+    },
+    btnSaveLabels: {
+        height:46,
+        alignSelf: 'stretch',
+        flex:1,
+        backgroundColor: '#008000',
+        borderRadius: 4,
+        marginTop: 10,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    btnAddLabel: {
+        height:46,
+        alignSelf: 'stretch',
+        flex:1,
+        backgroundColor: '#DF4723',
+        borderRadius: 4,
+        marginTop: 10,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    btnAddLabelText: {
+        color: '#FFF',
+        fontWeight: 'bold',
+        fontSize: 16,
     },
     button : {
         width: 50,
