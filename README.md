@@ -15,6 +15,8 @@ const api = axios.create({
     baseURL: 'http://YOU_API'
 });
 ```
+![Demo](https://imgur.com/a/oGTefr8)
+
 
 ## Donations (Optional)
 
