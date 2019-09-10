@@ -18,9 +18,9 @@ const api = axios.create({
 [Demo](https://imgur.com/a/oGTefr8)
 
 ## Tecnologies
-> React-native
-> node 11
-> React native CLI
+- React-native
+- Node 11
+- React native CLI
 
 ## Donations (Optional)
 
